@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:p="http://www.springframework.org/schema/p"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context.xsd">
+
+	<!-- org.apache.activemq.pool.PooledConnectionFactory -->
+
+	<!-- TCP: means remote access on connection vm: means Local -->
+	<bean id="connectionFactory" class="org.apache.activemq.ActiveMQConnectionFactory"
+		p:brokerURL="tcp://localhost:61616" />
+
+	<bean id="cachedConnectionFactory"
+		class="org.springframework.jms.connection.CachingConnectionFactory"
+		p:targetConnectionFactory-ref="connectionFactory" p:sessionCacheSize="10" />
+
+	<bean id="mumEA" class="org.apache.activemq.command.ActiveMQQueue">
+		<constructor-arg value="mumEA.queue" />
+	</bean>
+
+	<bean id="jmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+		<constructor-arg name="connectionFactory" ref="cachedConnectionFactory" />
+		<property name="defaultDestinationName" value="mumEA" />
+		<property name="pubSubDomain" value="false" />
+	</bean>
+
+
+	<bean id="mumEATopic" class="org.apache.activemq.command.ActiveMQTopic">
+		<constructor-arg value="mumEA.topic" />
+	</bean>
+
+	<bean id="jmsTopicTemplate" class="org.springframework.jms.core.JmsTemplate">
+		<constructor-arg name="connectionFactory" ref="cachedConnectionFactory" />
+		<property name="defaultDestinationName" value="mumEATopic" />
+		<property name="pubSubDomain" value="true" />
+	</bean>
+
+
+	<bean id="weatherService" class="edu.mum.weather.WeatherServiceImpl" />
+
+
+	<context:component-scan base-package="edu.mum" />
+</beans>

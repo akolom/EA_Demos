@@ -1,0 +1,126 @@
+<?xml version="1.0"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+		 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+							 http://maven.apache.org/maven-v4_0_0.xsd">
+	<artifactId>spring-webservices</artifactId>
+	<modelVersion>4.0.0</modelVersion>
+	<inceptionYear>2013</inceptionYear>
+	<packaging>war</packaging>
+	<groupId>edu.mum.webservices</groupId>
+	<version>1.0</version>
+
+ <dependencyManagement>
+ <dependencies>
+  
+         <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-framework-bom</artifactId>
+            <version>4.2.4.RELEASE</version>
+            <type>pom</type>
+            <scope>import</scope>
+        </dependency>
+
+         <dependency>
+            <groupId>io.spring.platform</groupId>
+            <artifactId>platform-bom</artifactId>
+            <version>2.0.1.RELEASE</version>
+            <type>pom</type>
+            <scope>import</scope>
+        </dependency>
+   </dependencies>
+   </dependencyManagement>
+
+
+	<properties>
+		<context.path>spring-webservices-sample</context.path>
+ 
+  	<maven.compiler.source>1.8</maven.compiler.source>
+  	<maven.compiler.target>1.8</maven.compiler.target>
+ 
+	
+	</properties>
+	
+	<dependencies>
+		<dependency>
+			<groupId>log4j</groupId>
+			<artifactId>log4j</artifactId>
+ 		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-core</artifactId>
+ 		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-context</artifactId>
+ 		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-beans</artifactId>
+ 		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-aop</artifactId>
+ 		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-aspects</artifactId>
+ 		</dependency>
+		<dependency>
+			<groupId>commons-collections</groupId>
+			<artifactId>commons-collections</artifactId>
+ 		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-oxm</artifactId>
+ 		</dependency>
+		<dependency>
+			<groupId>org.springframework.ws</groupId>
+			<artifactId>spring-ws-core</artifactId>
+ 		</dependency>
+		<dependency>
+    		<groupId>org.apache.ws.xmlschema</groupId>
+    		<artifactId>xmlschema-core</artifactId>
+    		<version>2.2.1</version>
+		</dependency>
+		<dependency>
+		  <groupId>wsdl4j</groupId>
+		  <artifactId>wsdl4j</artifactId>
+ 		</dependency>
+	  </dependencies>
+	  
+	  	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>jaxb2-maven-plugin</artifactId>
+				<version>1.4</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>xjc</goal>
+						</goals>
+						<phase>generate-sources</phase>
+					</execution>
+				</executions>
+				<configuration>
+					<clearOutputDir>false</clearOutputDir>
+					<outputDirectory>src/main/java</outputDirectory>
+					<schemaDirectory>src/main/webapp/schemas</schemaDirectory>
+					<includeSchema>**/*.xsd</includeSchema>
+					<bindingDirectory>src/main/resources/bindings</bindingDirectory>
+					<enableIntrospection>false</enableIntrospection>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-war-plugin</artifactId>
+				<version> 2.6</version>
+				<configuration>
+					<warName>${context.path}</warName>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+	  
+</project>

@@ -1,0 +1,3 @@
+Exercises Transaction propagation * Isolation levels
+
+Demos Dirty reads, repeatable reads, etc...

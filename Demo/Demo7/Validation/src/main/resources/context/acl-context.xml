@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans 
+             http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <bean id="cacheManager" class="org.springframework.cache.ehcache.EhCacheManagerFactoryBean" />
+
+<!--  Cache is "recommended because ACLs can  GROW fairly quickly -->
+    <bean id="aclCache"
+          class="org.springframework.security.acls.domain.EhCacheBasedAclCache">
+        <constructor-arg ref="aclEhCache" />
+        <constructor-arg ref="permissionGrantingStrategy" />
+        <constructor-arg ref="authorizationStrategy" />
+    </bean>
+
+    <bean id="aclEhCache"
+          class="org.springframework.cache.ehcache.EhCacheFactoryBean">
+        <property name="cacheManager" ref="cacheManager" />
+        <property name="cacheName" value="aclCache" />
+    </bean>
+
+<!-- SQL strategy for Fetching ACLs from database -->
+    <bean id="lookupStrategy"
+          class="org.springframework.security.acls.jdbc.BasicLookupStrategy">
+        <constructor-arg ref="dataSource" />
+        <constructor-arg ref="aclCache" />
+        <constructor-arg ref="authorizationStrategy" />
+        <constructor-arg ref="permissionGrantingStrategy" />
+    </bean>
+
+<!-- Defines what roles can modify ACL properties... -->
+    <bean id="authorizationStrategy" class="org.springframework.security.acls.domain.AclAuthorizationStrategyImpl">
+        <constructor-arg>
+            <bean id="adminRole"
+                  class="org.springframework.security.core.authority.SimpleGrantedAuthority">
+                <constructor-arg value="ROLE_SUPERVISOR" />
+            </bean>
+        </constructor-arg>
+    </bean>
+
+<!-- Strategy to determine Grant/Deny Access based on ACEs/permissions -->
+    <bean id="permissionGrantingStrategy" class="org.springframework.security.acls.domain.DefaultPermissionGrantingStrategy">
+        <constructor-arg>
+            <bean class="org.springframework.security.acls.domain.ConsoleAuditLogger" />
+        </constructor-arg>
+    </bean>
+
+    <bean id="aclService"
+          class="org.springframework.security.acls.jdbc.JdbcMutableAclService">
+        <constructor-arg ref="dataSource" />
+        <constructor-arg ref="lookupStrategy" />
+        <constructor-arg ref="aclCache" />
+    <property name="classIdentityQuery" value="SELECT @@IDENTITY"/> 
+    <property name="sidIdentityQuery" value="SELECT @@IDENTITY"/>
+   </bean>
+
+    <bean id="aclPermissionEvaluator" class="org.springframework.security.acls.AclPermissionEvaluator">
+        <constructor-arg ref="aclService" />
+    </bean>
+
+    <bean id="methodExpressionHandler" class="org.springframework.security.access.expression.method.DefaultMethodSecurityExpressionHandler">
+        <property name="permissionEvaluator" ref="aclPermissionEvaluator" />
+        <property name="roleHierarchy" ref="roleHierarchy" />
+    </bean>
+    
+    
+    <!-- Need to get expressions to work with custom accessDecisionManager -->
+  <bean id="preAdviceVoter"
+    class="org.springframework.security.access.prepost.PreInvocationAuthorizationAdviceVoter">
+    <constructor-arg ref="exprPreInvocationAdvice" />
+</bean>
+
+    <bean id="exprPreInvocationAdvice"
+    class="org.springframework.security.access.expression.method.ExpressionBasedPreInvocationAdvice">
+    	<property name="expressionHandler" ref="methodExpressionHandler" />
+	</bean>
+    
+    
+
+<bean id="accessDecisionManager" class="org.springframework.security.access.vote.AffirmativeBased" >   
+    <constructor-arg>
+    	<list>
+	      	<ref bean="roleHierarchyVoter"/>
+	      	<ref bean="preAdviceVoter"/>
+	      </list>
+ 	</constructor-arg> 
+</bean> 
+
+     
+<bean id="roleHierarchyVoter" class="org.springframework.security.access.vote.RoleHierarchyVoter">
+    <constructor-arg ref="roleHierarchy" />
+</bean>
+
+<bean id="roleHierarchy"
+        class="org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl">
+    <property name="hierarchy">
+        <value>
+			ROLE_SUPERVISOR > ROLE_ADMIN
+		    ROLE_ADMIN > ROLE_USER
+			ROLE_USER > ROLE_GUEST
+	   </value>
+    </property>
+</bean>
+
+
+
+
+    
+    
+
+</beans>
